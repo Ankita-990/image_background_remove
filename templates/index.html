@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .file-input-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-input-label.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.02);
+        }
+
+        .file-icon {
+            font-size: 3em;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+
+        .file-text {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .format-selection {
+            margin-bottom: 30px;
+        }
+
+        .format-selection label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .format-option {
+            position: relative;
+        }
+
+        .format-option input[type="radio"] {
+            display: none;
+        }
+
+        .format-label {
+            display: block;
+            padding: 15px 10px;
+            text-align: center;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .format-option input[type="radio"]:checked + .format-label {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .format-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .format-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ Image Converter</h1>
+            <p>Convert your images to different formats quickly and easily</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message {% if 'Error' in message or 'Invalid' in message %}flash-error{% else %}flash-success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="file" name="file" class="file-input" accept="image/*" required>
+                    <label for="file" class="file-input-label" id="fileLabel">
+                        <div class="file-icon">📁</div>
+                        <div class="file-text">Click to select an image or drag and drop</div>
+                    </label>
+                    <div class="file-preview" id="filePreview">
+                        <img id="previewImg" src="" alt="Preview">
+                        <div class="file-info" id="fileInfo"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="format-selection">
+                <label>Choose output format:</label>
+                <div class="format-grid">
+                    <div class="format-option">
+                        <input type="radio" id="png" name="conversion_type" value="png" checked>
+                        <label for="png" class="format-label">PNG</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="jpg" name="conversion_type" value="jpg">
+                        <label for="jpg" class="format-label">JPG</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="gif" name="conversion_type" value="gif">
+                        <label for="gif" class="format-label">GIF</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="bmp" name="conversion_type" value="bmp">
+                        <label for="bmp" class="format-label">BMP</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="webp" name="conversion_type" value="webp">
+                        <label for="webp" class="format-label">WebP</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="tiff" name="conversion_type" value="tiff">
+                        <label for="tiff" class="format-label">TIFF</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="convert-btn" id="convertBtn" disabled>
+                Convert Image
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.getElementById('fileLabel');
+        const convertBtn = document.getElementById('convertBtn');
+        const filePreview = document.getElementById('filePreview');
+        const previewImg = document.getElementById('previewImg');
+        const fileInfo = document.getElementById('fileInfo');
+
+        // Handle file selection
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Handle drag and drop
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('dragover');
+        });
+
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('dragover');
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            
+            if (file) {
+                // Enable convert button
+                convertBtn.disabled = false;
+                
+                // Update label text
+                fileLabel.querySelector('.file-text').textContent = file.name;
+                fileLabel.querySelector('.file-icon').textContent = '✅';
+                
+                // Show preview if it's an image
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImg.src = e.target.result;
+                        filePreview.style.display = 'block';
+                        
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                        fileInfo.textContent = `${file.name} (${fileSize} MB)`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            convertBtn.textContent = 'Converting...';
+            convertBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

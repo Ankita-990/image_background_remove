@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converted Image - Image Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/view_style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Conversion Complete!</h1>
+            <p>Your image has been successfully converted</p>
+        </div>
+
+        <div class="image-container">
+            <div class="image-wrapper">
+                <img id="convertedImage" src="{{ url_for('serve_image', filename=filename) }}" alt="Converted Image" />
+                <div class="image-overlay">
+                    <div class="overlay-content">
+                        <p class="filename">{{ filename }}</p>
+                        <div class="image-info" id="imageInfo">
+                            <span class="dimensions"></span>
+                            <span class="file-size"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{{ url_for('download_image', filename=filename) }}" class="btn btn-download">
+                <span class="btn-icon">⬇️</span>
+                Download Image
+            </a>
+            <button onclick="copyImageUrl()" class="btn btn-copy">
+                <span class="btn-icon">📋</span>
+                Copy Link
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-convert-another">
+                <span class="btn-icon">🔄</span>
+                Convert Another
+            </a>
+        </div>
+
+        <div class="image-details">
+            <h3>Image Details</h3>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Format:</span>
+                    <span class="detail-value" id="imageFormat">{{ filename.split('.')[-1].upper() }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Filename:</span>
+                    <span class="detail-value">{{ filename }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Dimensions:</span>
+                    <span class="detail-value" id="imageDimensions">Loading...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">File Size:</span>
+                    <span class="detail-value" id="imageFileSize">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="success-message">
+            <div class="success-icon">✅</div>
+            <p>Image converted successfully! You can now download it, copy the link, or view it directly in your browser.</p>
+        </div>
+    </div>
+
+    <!-- Toast notification for copy action -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✅</span>
+        <span class="toast-message">Link copied to clipboard!</span>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/view_script.js') }}"></script>
+</body>
+</html>
